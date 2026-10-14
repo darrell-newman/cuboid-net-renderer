@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Cuboid Polyomino Net Renderer</title>
+  <script type="importmap">
+    {
+      "imports": {
+        "vue": "https://unpkg.com/vue@3.5.44/dist/vue.esm-browser.prod.js"
+      }
+    }
+  </script>
+  <script type="module" src="src/app.js"></script>
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: monospace;
+    }
+
+    html, body {
+      background: #fff;
+      margin: 0;
+      padding: 0;
+    }
+
+    fieldset {
+      background: #f7f7ff;
+      margin: 10px;
+      padding: 10px;
+    }
+
+    fieldset > legend {
+      background: #ccf;
+      border: 1px solid #000;
+      cursor: pointer;
+      padding: 5px;
+    }
+
+    fieldset > legend:hover {
+      background: #aaf;
+    }
+
+    fieldset.collapsed {
+      background: transparent;
+      border-bottom-color: transparent;
+      border-left-color: transparent;
+      border-right-color: transparent;
+      height: 0;
+      overflow: hidden;
+      padding-bottom: 0;
+      padding-top: 0;
+    }
+
+    fieldset.collapsed > :not(legend) {
+      display: none;
+    }
+
+    .presets {
+      float: left;
+    }
+
+    .presets ul {
+      margin: 0;
+      padding: 0 0 0 20px;
+    }
+
+    .presets ul + ul {
+      margin-top: 20px;
+    }
+
+    .presets li {
+      margin: 0;
+      padding: 0;
+    }
+
+    .column {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .normal-out {
+      align-self: center;
+      background: #fff;
+      border: 1px solid #000;
+      margin: 0;
+      padding: 5px;
+    }
+
+    .renderCt {
+      display: inline-flex;
+      flex-direction: column;
+      margin: 20px;
+    }
+
+    .row {
+      display: inline-flex;
+    }
+
+    .row + .row {
+      margin-top: -1px;
+    }
+
+    .square {
+      align-items: center;
+      border: 1px solid #000;
+      display: flex;
+      height: var(--square-size);
+      justify-content: center;
+      width: var(--square-size);
+    }
+
+    .square + .square {
+      margin-left: -1px;
+    }
+
+    .hide {
+      visibility: hidden;
+    }
+
+    .face1 {
+      background: #fff;
+    }
+
+    .face2 {
+      background: #fc9;
+    }
+
+    .face3 {
+      background: #fcc;
+    }
+
+    .face4 {
+      background: #cfc;
+    }
+
+    .face5 {
+      background: #ccf;
+    }
+
+    .face6 {
+      background: #ff9;
+    }
+
+    .corner::before {
+      background: #f00;
+      border-radius: 5px;
+      content: '';
+      display: block;
+      height: 8px;
+      width: 8px;
+    }
+  </style>
+</head>
+<body>
+<div id="app">
+  <fieldset class="presets" :class="{ collapsed: !showPresets }">
+    <legend @click="showPresets = !showPresets">Presets</legend>
+    <ul>
+      <li v-for="i in 15"><a href="#" @click.prevent="open('stacked', i)">Stacked {{ i }}</a></li>
+    </ul>
+    <ul>
+      <li v-for="i in 25"><a href="#" @click.prevent="open('spn', i)">SPN {{ i }}</a></li>
+    </ul>
+    <ul>
+      <li v-for="i in 1"><a href="#" @click.prevent="open('two-sixer', i)">Two-sixer {{ i }}</a></li>
+    </ul>
+    <ul>
+      <li v-for="i in 15"><a href="#" @click.prevent="open('short-tail', i)">Short tail {{ i }}</a></li>
+    </ul>
+    <ul>
+      <li v-for="i in 12"><a href="#" @click.prevent="open('v', i)">V {{ i }}</a></li>
+    </ul>
+  </fieldset>
+  <fieldset :class="{ collapsed: !showInput }">
+    <legend @click="showInput = !showInput">Input net ASCII</legend>
+    <textarea v-model="netAscii" cols="80" rows="20"></textarea>
+  </fieldset>
+  <fieldset :class="{ collapsed: !showDetails }">
+    <legend @click="showDetails = !showDetails">Details</legend>
+    <pre>Size: {{ netSize }}</pre>
+    <pre>Is connected: {{ isConnected }}</pre>
+    <pre>Is rotationally symmetric: {{ isSymmetric }}</pre>
+  </fieldset>
+  <fieldset class="column" :class="{ collapsed: !showNormal }">
+    <legend @click="showNormal = !showNormal">Normalized</legend>
+    <div>
+      <label><input type="checkbox" v-model="flipNormal">Flip</label>
+    </div>
+    <div>
+      <label v-for="v in [0, 90, 180, 270]"><input type="radio" v-model="rotateNormal" :value="v">{{ v }}&deg;</label>
+    </div>
+    <pre class="normal-out">{{ normal.toString().replace('@', showOcs ? '@' : '#') }}</pre>
+  </fieldset>
+  <fieldset :class="{ collapsed: !showOutputSettings }">
+    <legend @click="showOutputSettings = !showOutputSettings">Output settings</legend>
+    <select v-if="cuboidOptions.length" :size="cuboidOptions.length" v-model="selectedCuboid">
+      <option v-for="cuboid of cuboidOptions" :value="cuboid">{{ cuboid.join(' x ') }}</option>
+    </select>
+    <br>
+    <label><input type="checkbox" v-model="highlightCorners">Highlight corners</label>
+<!--    <br>-->
+<!--    <label><input type="checkbox" v-model="showOcs">Show origin OCS</label>-->
+    <br>
+    <label>Square size: <input type="number" min="3" max="100" v-model="squareSize"></label>
+  </fieldset>
+
+  <pre v-if="showOcs">Origin OCS: {{ originOcs }}</pre>
+  <button v-if="showOcs" @click="originCount++">Next origin</button>
+  <br>
+  <div class="renderCt" :style="{ '--square-size': `${renderSquareSize}px` }">
+    <div v-for="row of netShading" class="row">
+      <div
+        v-for="cell of row"
+        class="square"
+        :class="cell ? { [clses[cell.side]]: true, corner: highlightCorners && cell.corner } : 'hide'"
+      ></div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

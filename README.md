@@ -100,6 +100,12 @@ The rest of the net is often in bands of 4, like a stacked net or simple-phase n
 
 These 'short tails' appear in several of the solutions. If a solution has no other obvious defining feature then it has been listed simply as a 'short tail'. Arguably they should be split into two subgroups, depending on whether the central region is stacked or a simple-phase net.
 
+### Misc
+
+The 'misc' solutions are recent additions that haven't yet been classified.
+
+Currently, this consists of 7 solutions that are very similar to the stacked solutions, but with an end band split up to form a tail. There are a variety of tail configurations and it isn't yet clear how to classify them. The known solutions only have a tail at one end, but it seems entirely possible that there could be similar tails at both ends. If such solutions are found it may lead to the 'short tails' category being merged into 'misc', as the distinction between the categories is fuzzy at best.
+
 ### Long tails
 
 Currently, there are two known categories of solutions with long tails:

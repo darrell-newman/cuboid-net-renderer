@@ -165,10 +165,10 @@
       <li v-for="i in 1"><a href="#" @click.prevent="open('two-sixer', i)">Two-sixer {{ i }}</a></li>
     </ul>
     <ul>
-      <li v-for="i in 17"><a href="#" @click.prevent="open('short-tail', i)">Short tail {{ i }}</a></li>
+      <li v-for="i in 19"><a href="#" @click.prevent="open('short-tail', i)">Short tail {{ i }}</a></li>
     </ul>
     <ul>
-      <li v-for="i in 9"><a href="#" @click.prevent="open('misc', i)">Misc {{ i }}</a></li>
+      <li v-for="i in 12"><a href="#" @click.prevent="open('misc', i)">Misc {{ i }}</a></li>
     </ul>
     <ul>
       <li v-for="i in 12"><a href="#" @click.prevent="open('v', i)">V {{ i }}</a></li>
@@ -201,8 +201,8 @@
     </select>
     <br>
     <label><input type="checkbox" v-model="highlightCorners">Highlight corners</label>
-<!--    <br>-->
-<!--    <label><input type="checkbox" v-model="showOcs">Show origin OCS</label>-->
+    <br>
+    <label><input type="checkbox" v-model="showOcs">Show origin OCS</label>
     <br>
     <label>Square size: <input type="number" min="3" max="100" v-model="squareSize"></label>
   </fieldset>
